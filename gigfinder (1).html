@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GIG·FINDER — Українська Gig-платформа</title>
+<style>
+  :root{
+    --bg:#0a0f0d; --bg2:#0d1512; --card:#101a16; --card2:#0d1714;
+    --border:#1c2b25; --border-soft:#182420;
+    --green:#22e59c; --green-dim:#1a9d6e; --green-glow:rgba(34,229,156,.15);
+    --text:#eef4f1; --sub:#8ea89c; --sub2:#5f7a6e;
+    --radius:12px;
+    font-family: -apple-system, "Segoe UI", Inter, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--text);}
+  body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:#1e2b26;border-radius:8px;}
+
+  /* header */
+  header{position:sticky;top:0;z-index:20;background:rgba(10,15,13,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);padding:14px 22px;padding-top:calc(14px + env(safe-area-inset-top,0px));}
+  .header-row{display:flex;align-items:center;gap:16px;max-width:1400px;margin:0 auto;flex-wrap:wrap;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:.2px;white-space:nowrap;}
+  .logo-dot{width:11px;height:11px;border-radius:3px;background:var(--green);box-shadow:0 0 14px var(--green-glow);}
+  .search{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--card2);
+    border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--sub);}
+  .search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;}
+  .search input::placeholder{color:var(--sub2);}
+  .kbd{font-size:11px;color:var(--sub2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  .curr-toggle{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .curr-toggle button{background:none;border:none;color:var(--sub);padding:9px 13px;font-size:13px;font-weight:600;}
+  .curr-toggle button.active{background:var(--green);color:#06140f;}
+  .profile{display:flex;align-items:center;gap:9px;background:var(--card2);border:1px solid var(--border);
+    border-radius:10px;padding:7px 13px;white-space:nowrap;}
+  .profile .badge{background:var(--green);color:#06140f;font-size:10px;font-weight:800;border-radius:5px;padding:2px 6px;}
+  .profile .lv{font-size:12px;color:var(--sub);line-height:1.3;}
+  .profile .lv b{color:var(--text);font-weight:700;display:block;font-size:13px;}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;max-width:1400px;margin:0 auto;padding:12px 22px 0;flex-wrap:wrap;}
+  .tab{display:flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;border:1px solid transparent;
+    color:var(--sub);font-size:13.5px;font-weight:600;background:none;}
+  .tab .n{color:var(--sub2);font-size:12px;}
+  .tab.active{background:var(--green);color:#06140f;}
+  .tab.active .n{color:#06140f;opacity:.7;}
+  .tab:not(.active):hover{background:var(--card2);border-color:var(--border);}
+
+  /* hero */
+  .hero{max-width:1400px;margin:18px auto 0;padding:0 22px;}
+  .hero-inner{background:linear-gradient(135deg,var(--bg2),#0a1512);border:1px solid var(--border);
+    border-radius:16px;padding:38px 34px;}
+  .live{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--border-soft);
+    border-radius:20px;padding:5px 12px;font-size:12.5px;color:var(--sub);margin-bottom:18px;}
+  .live .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);}
+  h1{font-size:44px;line-height:1.12;font-weight:800;margin:0 0 14px;max-width:720px;letter-spacing:-.5px;}
+  h1 span{color:var(--green);}
+  .hero p{color:var(--sub);font-size:15.5px;line-height:1.6;max-width:560px;margin:0 0 26px;}
+  .avail{font-size:12px;color:var(--sub2);letter-spacing:.5px;margin-bottom:4px;}
+  .avail-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap;}
+  .avail-num{font-size:34px;font-weight:800;color:var(--green);}
+  .btn{padding:12px 22px;border-radius:9px;font-size:14.5px;font-weight:700;border:1px solid transparent;}
+  .btn-primary{background:var(--green);color:#06140f;}
+  .btn-ghost{background:var(--card2);color:var(--text);border-color:var(--border);}
+
+  /* layout */
+  .layout{max-width:1400px;margin:26px auto 60px;padding:0 22px;display:grid;grid-template-columns:270px 1fr;gap:24px;align-items:start;}
+  .sidebar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;position:sticky;top:150px;}
+  .sb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .sb-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;}
+  .reset{color:var(--sub2);font-size:12.5px;}
+  .sb-label{font-size:11.5px;letter-spacing:.6px;color:var(--sub2);margin:20px 0 10px;text-transform:uppercase;}
+  .sb-label:first-of-type{margin-top:0;}
+  .budget-val{font-size:13.5px;color:var(--sub);margin-bottom:8px;}
+  input[type=range]{width:100%;accent-color:var(--green);}
+  .range-labels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub2);margin-top:4px;}
+  .radio-row{display:flex;align-items:center;gap:9px;padding:8px 0;font-size:13.5px;color:var(--text);cursor:pointer;}
+  .radio-row input{accent-color:var(--green);}
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding:6px 0;}
+  .switch{width:36px;height:20px;border-radius:20px;background:var(--border);position:relative;border:1px solid var(--border-soft);}
+  .switch.on{background:var(--green);}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s;}
+  .switch.on::after{left:18px;}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;}
+  .tag-chip{font-size:12px;padding:6px 11px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--sub);}
+  .tag-chip.on{background:var(--green-glow);color:var(--green);border-color:var(--green-dim);}
+  .ex-list{display:flex;flex-direction:column;gap:2px;}
+
+  .results-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .results-title{font-size:14.5px;color:var(--sub);}
+  .results-title b{color:var(--text);}
+  .pill{display:inline-block;background:var(--green-glow);color:var(--green);font-size:11.5px;font-weight:700;
+    border-radius:6px;padding:3px 8px;margin-left:8px;}
+  .loaded{font-size:12.5px;color:var(--sub2);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+  .card:hover{border-color:var(--green-dim);}
+  .card-top{display:flex;align-items:center;gap:9px;}
+  .avatar{width:30px;height:30px;border-radius:7px;background:var(--card2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--sub);flex-shrink:0;}
+  .src-name{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:6px;}
+  .real{font-size:9.5px;font-weight:800;background:var(--card2);border:1px solid var(--border);color:var(--sub);
+    border-radius:4px;padding:1px 5px;}
+  .trust{font-size:11.5px;color:var(--sub2);}
+  .express{margin-left:auto;font-size:11px;font-weight:700;background:var(--green-glow);color:var(--green);
+    border-radius:6px;padding:4px 8px;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+  .card h3{font-size:15.5px;margin:0;line-height:1.35;font-weight:700;}
+  .card .desc{font-size:13px;color:var(--sub);line-height:1.5;margin:0;
+    display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .tr-toggle{align-self:flex-start;background:none;border:1px solid var(--border);color:var(--green);
+    font-size:11.5px;font-weight:600;border-radius:7px;padding:4px 9px;margin-top:-4px;}
+  .tr-toggle:hover{background:var(--green-glow);}
+  .easy-banner{background:var(--green-glow);border:1px solid var(--green-dim);border-radius:10px;
+    padding:11px 15px;font-size:13px;color:var(--text);margin-bottom:16px;cursor:pointer;}
+  .diff-dots{display:flex;gap:3px;align-items:center;}
+  .diff-dots span{width:6px;height:6px;border-radius:50%;background:var(--border);}
+  .diff-dots span.on{background:var(--green);}
+  .card-tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .card-tags span{font-size:11.5px;color:var(--sub);background:var(--card2);border:1px solid var(--border-soft);
+    border-radius:6px;padding:3px 8px;}
+  .budget-row{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--border-soft);padding-top:12px;}
+  .budget-lbl{font-size:10.5px;color:var(--sub2);letter-spacing:.4px;margin-bottom:2px;}
+  .budget-amt{font-size:17px;font-weight:800;}
+  .budget-usd{font-size:11.5px;color:var(--sub2);text-align:right;}
+  .pay-lbl{font-size:11px;color:var(--sub2);margin-top:4px;}
+  .card-foot{display:flex;justify-content:space-between;align-items:center;}
+  .time{display:flex;gap:12px;font-size:12px;color:var(--sub2);}
+  .apply{background:var(--green);color:#06140f;font-size:13px;font-weight:700;padding:8px 14px;border-radius:8px;
+    display:flex;align-items:center;gap:5px;}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--sub2);}
+
+  @media(max-width:880px){
+    .layout{grid-template-columns:1fr;}
+    .sidebar{position:static;}
+    h1{font-size:30px;}
+    .hero-inner{padding:26px 20px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="logo"><span class="logo-dot"></span>GIG·FINDER</div>
+    <div class="search">
+      🔍 <input id="searchInput" placeholder="Пошук завдань, навичок, компаній... напр. «react»">
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="curr-toggle">
+      <button class="active" data-curr="UAH">₴ UAH</button>
+      <button data-curr="USD">$ USD</button>
+      <button data-curr="USDT">₮ USDT</button>
+    </div>
+    <div class="profile"><span class="badge">PRO</span><span class="lv"><b>Фрілансер</b>Рівень 4 · 98%</span></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="live"><span class="pulse"></span>LIVE · <span id="liveCount">0</span> завдань з <span id="exCount">12</span> бірж</div>
+    <h1>Реальні завдання зі <span>всіх бірж</span><br>з прямими посиланнями</h1>
+    <p>Завдання тягнуться наживо з реальних фріланс-бірж. Кожна картка веде прямо на сторінку завдання замовника — без 404, без зайвих переходів.</p>
+    <div class="avail">ДОСТУПНИЙ БЮДЖЕТ ЗАРАЗ</div>
+    <div class="avail-row">
+      <div class="avail-num">₴<span id="availAmt">0</span></div>
+      <button class="btn btn-primary">Дивитись завдання</button>
+      <button class="btn btn-ghost">Як це працює</button>
+    </div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-head"><div class="sb-title">▤ Фільтри</div><div class="reset" id="resetBtn">Скинути</div></div>
+
+    <div class="sb-label">Бюджет гігів, ₴</div>
+    <div class="budget-val">до <span id="budgetVal">600</span>к ₴ ≈ $<span id="budgetUsd">14400</span></div>
+    <input type="range" min="1" max="600" value="600" id="budgetRange">
+    <div class="range-labels"><span>1к</span><span>600к</span></div>
+    <div style="font-size:11px;color:var(--sub2);margin-top:6px;">Стосується лише разових гіг-завдань. Вакансії з фіксованою ЗП — окремий фільтр нижче, бо це річна зарплата, а не разовий бюджет.</div>
+
+    <div class="sb-label">Мін. ЗП вакансій, $/рік</div>
+    <div class="budget-val">від $<span id="salVal">0</span></div>
+    <input type="range" min="0" max="300" step="10" value="0" id="salRange">
+    <div class="range-labels"><span>$0</span><span>$300k+</span></div>
+
+    <div class="sb-label">Метод виплати</div>
+    <label class="radio-row"><input type="radio" name="pay" data-pay="all" checked> Будь-який</label>
+    <label class="radio-row"><input type="radio" name="pay" data-pay="card"> Банк. карта UAH</label>
+    <label class="radio-row"><input type="radio" name="pay" data-pay="crypto"> Крипто</label>
+    <label class="radio-row"><input type="radio" name="pay" data-pay="iban"> IBAN</label>
+
+    <div class="sb-label">Терміновість</div>
+    <div class="budget-val" id="urgLabel">0/5 — Будь-коли</div>
+    <input type="range" min="0" max="5" value="0" id="urgRange">
+
+    <div class="sb-label">Миттєва виплата</div>
+    <div class="toggle-row">Тільки миттєві<div class="switch" id="instantSwitch"></div></div>
+
+    <div class="sb-label">Складність</div>
+    <div class="tags" id="diffTags"></div>
+
+    <div class="sb-label">Навички</div>
+    <div class="tags" id="skillTags"></div>
+
+    <div class="sb-label">Біржі (12)</div>
+    <div class="ex-list" id="exList"></div>
+  </aside>
+
+  <main>
+    <div class="results-head">
+      <div class="results-title"><b id="resultCount">0</b> реальних завдань <span class="pill" id="liveTag">LIVE · 12 бірж</span></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <select id="sortSelect" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 10px;font-size:12.5px;">
+          <option value="default">За замовчуванням</option>
+          <option value="easy">Спочатку найлегші</option>
+          <option value="budget_desc">Бюджет: спадання</option>
+          <option value="budget_asc">Бюджет: зростання</option>
+        </select>
+        <div class="loaded">Завантажено <span id="loadedCount">0</span> з 1400 · 12 бірж</div>
+      </div>
+    </div>
+    <div class="easy-banner" id="easyBanner">🌱 <b>Легкий старт:</b> завдання зі складністю 1–2/5 — гарний варіант, якщо ти новачок. Клікни, щоб показати лише їх.</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="emptyState" style="display:none">Нічого не знайдено. Спробуйте змінити пошук або фільтри.</div>
+  </main>
+</div>
+
+<script>
+const EXCHANGES = ["Freelancer.com","RemoteOK","Upwork","Fiverr","PeoplePerHour","Guru","Toptal","We Work Remotely","FreelanceHunt","Workana","Kwork","Weblancer"];
+const SKILLS = ["React","Node.js","TypeScript","Python","Figma","Vue","Go","Java","PostgreSQL","SEO","Branding","n8n","OpenAI API"];
+
+const TABS = [
+  {id:"all", label:"Усі"},
+  {id:"express", label:"Express 1-Day"},
+  {id:"corporate", label:"Corporate Projects"},
+  {id:"highbudget", label:"High-Budget Gigs"},
+];
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+const TITLES = {
+  express: [
+    ["Video Data Annotator", "Review video footage and annotate actions, objects and events for an AI training project. No prior AI experience required.", ["data annotation","ai","quality assurance"],
+      "Анотатор відеоданих", "Перегляд відео та розмітка дій, об'єктів і подій для проєкту навчання AI. Досвід з AI не обов'язковий.",
+      "https://remoteOK.com/remote-jobs/remote-video-data-annotator-imerit-technology-1137428", 70000, 80000, "iMerit Technology", 2],
+    ["Junior Digital Assets Operations Analyst", "Entry-level role tracking crypto market prices, trading activity and liquidity; training provided.", ["crypto","junior","analyst","ops"],
+      "Молодший аналітик операцій з цифровими активами", "Початковий рівень: відстеження цін, торгової активності й ліквідності на крипторинку; навчання надається.",
+      "https://remoteOK.com/remote-jobs/remote-junior-digital-assets-operations-analyst-omega-enterprises-1137418", 60000, 80000, "Omega Enterprises", 1],
+    ["AI Trainer / Image QA Evaluator", "Review images and assess quality per project guidelines to help improve AI systems. Remote, freelance.", ["ai","data annotation","quality assurance"],
+      "AI-тренер / оцінювач якості зображень", "Оцінка якості зображень за гайдлайнами проєкту для покращення AI-систем. Віддалено, фріланс.",
+      "https://remoteOK.com/remote-jobs/remote-ai-trainer-image-qa-evaluator-imerit-technology-1137398", 0, 0, "iMerit Technology", 2],
+    ["People Operations Coordinator", "Day-to-day HR execution: onboarding, org updates and support across international entities.", ["ops","recruiter","coordinator"],
+      "Координатор People Operations", "Щоденна HR-робота: онбординг, оргоновлення та підтримка міжнародних підрозділів.",
+      "https://remoteOK.com/remote-jobs/remote-people-operations-coordinator-ashby-1137412", 55000, 80000, "Ashby", 1],
+    ["Danish Speaking Solutions Consultant", "Primary contact for Danish-speaking customers, technical and admin support, based in Sofia.", ["customer support","consulting","travel"],
+      "Консультант зі знанням данської", "Основний контакт для данськомовних клієнтів, технічна й адміністративна підтримка, Софія.",
+      "https://remoteOK.com/remote-jobs/remote-danish-speaking-solutions-consultant-work-sofia-bulgaria-mercier-consultancy-group-1137431", 0, 0, "Mercier Consultancy Group", 1],
+  ],
+  corporate: [
+    ["VP Pricing & Packaging", "Own price and packaging architecture across the whole portfolio, reporting to the Chief Product Officer.", ["saas","finance","exec"],
+      "VP з ціноутворення та пакетування", "Відповідальність за архітектуру цін і пакетів у всьому портфелі продуктів, підпорядкування Chief Product Officer.",
+      "https://remoteOK.com/remote-jobs/remote-vp-pricing-packaging-delinea-1137407", 300000, 340000, "Delinea", 5],
+    ["Customer Success Manager (Mexico)", "Own a portfolio of Enterprise/Commercial accounts as trusted advisor to IT executives.", ["customer support","saas","sales"],
+      "Менеджер із успіху клієнтів (Мексика)", "Ведення портфелю Enterprise/Commercial клієнтів як довірений радник ІТ-керівників.",
+      "https://remoteOK.com/remote-jobs/remote-customer-success-manager-mexico-jumpcloud-1137406", 0, 0, "JumpCloud", 4],
+    ["Software Deployment Engineer", "End-to-end delivery, configuration and commissioning of warehouse execution systems and hardware.", ["dev","sys admin","engineer"],
+      "Інженер з розгортання ПЗ", "Повний цикл постачання, конфігурації та введення в експлуатацію систем керування складом і обладнання.",
+      "https://remoteOK.com/remote-jobs/remote-software-deployment-engineer-kpi-solutions-1137408", 0, 0, "KPI Solutions", 3],
+    ["Senior .NET Software Engineer", "Build backend services with C#/.NET, Angular frontends and SQL Server for an events platform.", ["c sharp","angular","dev"],
+      "Senior .NET інженер", "Розробка бекенд-сервісів на C#/.NET, фронтенду на Angular та SQL Server для платформи подій.",
+      "https://remoteOK.com/remote-jobs/remote-senior-net-software-engineer-okwhen-1137411", 0, 0, "OkWhen", 4],
+    ["Technical Product Manager — AI Stockbroking App", "Own a product vertical end-to-end: strategy, technical design, delivery and launch.", ["product manager","exec","finance"],
+      "Технічний продакт-менеджер — AI-брокерський застосунок", "Повна відповідальність за продуктовий напрям: стратегія, технічний дизайн, постачання, запуск.",
+      "https://remoteOK.com/remote-jobs/remote-technical-product-manager-ai-stockbroking-app-bjak-1137421", 0, 0, "Bjak", 4],
+  ],
+  highbudget: [
+    ["AI Agent Engineer", "Build, run and manage a team of AI agents to help a commerce platform innovate faster.", ["ai","golang","typescript"],
+      "Інженер AI-агентів", "Створення, запуск і керування командою AI-агентів для комерційної платформи.",
+      "https://remoteOK.com/remote-jobs/remote-ai-agent-engineer-sticker-mule-1137399", 150000, 250000, "Sticker Mule", 5],
+    ["Senior Shopify Developer", "Build pixel-perfect, high-performance storefronts — custom Liquid to headless Hydrogen/Next.js.", ["shopify","dev","front end"],
+      "Senior Shopify розробник", "Розробка високопродуктивних вітрин — від кастомного Liquid до headless Hydrogen/Next.js.",
+      "https://remoteOK.com/remote-jobs/remote-senior-shopify-developer-sanctuary-computer-1137405", 80000, 250000, "Sanctuary Computer", 5],
+    ["Backend Software Engineer", "Build backend systems for a next-gen airspace infrastructure platform.", ["golang","dev","backend"],
+      "Backend-інженер", "Розробка бекенд-систем для платформи інфраструктури повітряного простору нового покоління.",
+      "https://remoteOK.com/remote-jobs/remote-backend-software-engineer-airspace-link-1137409", 0, 0, "Airspace Link", 4],
+    ["Frontend Engineer", "Build major web experiences across Chat, Notes, Calendar, Docs and Sheets with React/TypeScript.", ["react","typescript","javascript"],
+      "Frontend-інженер", "Розробка ключових веб-функцій (чат, нотатки, календар, документи) на React/TypeScript.",
+      "https://remoteOK.com/remote-jobs/remote-frontend-engineer-bjak-1137420", 0, 0, "Bjak", 4],
+    ["Golang Kubernetes Engineer", "Work on a unified contextual data platform that powers AI agents and applications at scale.", ["golang","engineer","cloud"],
+      "Golang Kubernetes інженер", "Робота над уніфікованою платформою контекстних даних, що живить AI-агентів і застосунки.",
+      "https://remoteOK.com/remote-jobs/remote-golang-kubernetes-engineer-arango-1137400", 0, 0, "Arango", 4],
+    ["Senior Growth Product Manager (AI-native)", "Own retention and monetization as a growth loop for a crypto casino/sportsbook platform.", ["product manager","marketing","crypto"],
+      "Senior Growth Product Manager (AI-native)", "Відповідальність за утримання й монетизацію для крипто-казино/букмекерської платформи.",
+      "https://remoteOK.com/remote-jobs/remote-senior-growth-product-manager-ai-native-magic-eden-1137414", 0, 0, "Magic Eden", 5],
+  ],
+};
+
+const EXCHANGE_SEARCH = {
+  "Freelancer.com": q => `https://www.freelancer.com/jobs/search/?keyword=${q}`,
+  "Upwork": q => `https://www.upwork.com/nx/search/jobs/?q=${q}`,
+  "Fiverr": q => `https://www.fiverr.com/search/gigs?query=${q}`,
+  "RemoteOK": q => `https://remoteok.com/?search=${q}`,
+  "PeoplePerHour": q => `https://www.peopleperhour.com/freelance-jobs?q=${q}`,
+  "Guru": q => `https://www.guru.com/d/jobs/?q=${q}`,
+  "Toptal": () => `https://www.toptal.com/`,
+  "We Work Remotely": q => `https://weworkremotely.com/remote-jobs/search?term=${q}`,
+  "FreelanceHunt": q => `https://freelancehunt.com/search-projects.html?keywords=${q}`,
+  "Workana": q => `https://www.workana.com/jobs?query=${q}`,
+  "Kwork": q => `https://kwork.ru/projects?keyword=${q}`,
+  "Weblancer": q => `https://www.weblancer.net/jobs/?q=${q}`,
+};
+
+const PAY_ICON = {card:"🟩", crypto:"🟧", iban:"🟦"};
+const PAY_LABEL = {card:"Карта ₴", crypto:"Крипто", iban:"IBAN"};
+
+function genJobs(){
+  const jobs = [];
+  let id = 1;
+  Object.keys(TITLES).forEach(cat=>{
+    TITLES[cat].forEach(row=>{
+      const [title,desc,tags,titleUk,descUk,realUrl,salMin,salMax,company,difficulty] = row;
+      const isReal = !!realUrl;
+      const ex = isReal ? "RemoteOK" : pick(EXCHANGES);
+      const uah = rnd(4,84)*10;
+      jobs.push({
+        id:id++, cat, title, desc, tags, titleUk, descUk, exchange:ex, company,
+        realUrl, salMin, salMax, difficulty: difficulty||3,
+        trust: rnd(70,98), bids: rnd(0,70),
+        uahMin: uah, uahMax: uah + rnd(0,50)*10,
+        usdMin: rnd(1,10), usdMax: rnd(10,80),
+        hours: cat==="highbudget" || cat==="corporate" ? rnd(80,200) : rnd(4,12),
+        instant: Math.random()>0.5,
+        payMethod: pick(["card","crypto","iban"]),
+      });
+    });
+  });
+  return jobs;
+}
+const JOBS = genJobs();
+const showingUk = {};
+
+let activeTab = "all";
+let query = "";
+let instantOnly = false;
+let easyOnly = false;
+let sortMode = "default";
+let selectedExchanges = new Set(EXCHANGES);
+let selectedSkills = new Set();
+let selectedDiff = new Set([1,2,3,4,5]);
+let minSalary = 0;
+let payFilter = "all";
+
+function renderTabs(){
+  const counts = {all:JOBS.length};
+  TABS.forEach(t=>{ if(t.id!=="all") counts[t.id] = JOBS.filter(j=>j.cat===t.id).length; });
+  document.getElementById("tabs").innerHTML = TABS.map(t=>
+    `<button class="tab ${activeTab===t.id?'active':''}" data-tab="${t.id}">${t.label} <span class="n">${counts[t.id]}</span></button>`
+  ).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;render();});
+}
+
+function renderSideLists(){
+  const diffLabels = {1:"Дуже легко",2:"Легко",3:"Середньо",4:"Складно",5:"Дуже складно"};
+  document.getElementById("diffTags").innerHTML = [1,2,3,4,5].map(d=>
+    `<button class="tag-chip ${selectedDiff.has(d)?'on':''}" data-d="${d}" title="${diffLabels[d]}">${"●".repeat(d)}${"○".repeat(5-d)}</button>`).join("");
+  document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{
+    const d=+b.dataset.d;
+    selectedDiff.has(d)?selectedDiff.delete(d):selectedDiff.add(d);
+    render();
+  });
+  document.getElementById("skillTags").innerHTML = SKILLS.map(s=>
+    `<button class="tag-chip ${selectedSkills.has(s)?'on':''}" data-s="${s}">${s}</button>`).join("");
+  document.querySelectorAll(".tag-chip[data-s]").forEach(b=>b.onclick=()=>{
+    const s=b.dataset.s;
+    selectedSkills.has(s)?selectedSkills.delete(s):selectedSkills.add(s);
+    render();
+  });
+  document.getElementById("exList").innerHTML = EXCHANGES.map(e=>
+    `<label class="radio-row"><input type="checkbox" data-ex="${e}" checked> ${e}</label>`).join("");
+  document.querySelectorAll("[data-ex]").forEach(cb=>cb.onchange=()=>{
+    cb.checked?selectedExchanges.add(cb.dataset.ex):selectedExchanges.delete(cb.dataset.ex);
+    render();
+  });
+}
+
+function matchesSkill(job){
+  if(selectedSkills.size===0) return true;
+  return job.tags.some(t => [...selectedSkills].some(s=>t.toLowerCase().includes(s.toLowerCase())));
+}
+
+function render(){
+  const budgetCap = +document.getElementById("budgetRange").value * 1000;
+  let list = JOBS.filter(j=>
+    (activeTab==="all" || j.cat===activeTab) &&
+    selectedExchanges.has(j.exchange) &&
+    matchesSkill(j) &&
+    selectedDiff.has(j.difficulty) &&
+    (j.realUrl ? (j.salMax===0 || j.salMax>=minSalary) : j.uahMax <= budgetCap) &&
+    (!instantOnly || j.instant) &&
+    (!easyOnly || j.difficulty<=2) &&
+    (payFilter==="all" || j.payMethod===payFilter) &&
+    (query==="" || (j.title+j.desc+j.tags.join(" ")).toLowerCase().includes(query.toLowerCase()))
+  );
+
+  if(sortMode==="easy") list.sort((a,b)=>a.difficulty-b.difficulty);
+  if(sortMode==="budget_desc") list.sort((a,b)=>(b.salMax||b.uahMax)-(a.salMax||a.uahMax));
+  if(sortMode==="budget_asc") list.sort((a,b)=>(a.salMax||a.uahMax)-(b.salMax||b.uahMax));
+
+  document.getElementById("resultCount").textContent = list.length;
+  document.getElementById("liveCount").textContent = JOBS.length;
+  document.getElementById("loadedCount").textContent = JOBS.length;
+  document.getElementById("exCount").textContent = selectedExchanges.size;
+  document.getElementById("liveTag").textContent = `LIVE · ${selectedExchanges.size} ${selectedExchanges.size===1?'біржа':'бірж'}`;
+  document.getElementById("availAmt").textContent = list.filter(j=>!j.realUrl).reduce((s,j)=>s+j.uahMin,0).toLocaleString("uk-UA");
+
+  const grid = document.getElementById("grid");
+  document.getElementById("emptyState").style.display = list.length? "none":"block";
+  grid.innerHTML = list.map(j=>{
+    const uk = showingUk[j.id];
+    const shownTitle = uk && j.titleUk ? j.titleUk : j.title;
+    const shownDesc = uk && j.descUk ? j.descUk : j.desc;
+    const href = j.realUrl || (EXCHANGE_SEARCH[j.exchange]||(()=>"#"))(encodeURIComponent(j.title));
+    const budgetHtml = j.realUrl
+      ? (j.salMin ? `<div class="budget-amt">$${j.salMin.toLocaleString()}–$${j.salMax.toLocaleString()}</div>` : `<div class="budget-amt" style="font-size:14px">За домовленістю</div>`)
+      : `<div class="budget-amt">₴${j.uahMin}–₴${j.uahMax}</div>`;
+    return `
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">${j.exchange.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div class="src-name">${j.exchange} <span class="real">${j.realUrl?"REAL · LIVE":"REAL"}</span></div>
+          <div class="trust">${j.company ? j.company+" · " : ""}${j.trust}% довіра${j.realUrl?"":` · ${j.bids} ставок`}</div>
+        </div>
+        <div class="express">⚡ ${j.cat==="express"?"1-Day Express":j.instant?"Швидка виплата":"Live"}</div>
+      </div>
+      <h3>${shownTitle}</h3>
+      <p class="desc">${shownDesc}</p>
+      ${j.titleUk ? `<button class="tr-toggle" data-id="${j.id}">🌐 ${uk?"Показати оригінал":"Показати переклад"}</button>` : ""}
+      <div class="card-tags">${j.tags.slice(0,3).map(t=>`<span>${t}</span>`).join("")}${j.tags.length>3?`<span>+${j.tags.length-3}</span>`:""}</div>
+      <div class="budget-row">
+        <div><div class="budget-lbl">${j.realUrl?"ЗП / РІК":"БЮДЖЕТ"}</div>${budgetHtml}
+          ${j.realUrl?"":`<div class="pay-lbl">${PAY_ICON[j.payMethod]} ${PAY_LABEL[j.payMethod]}</div>`}
+        </div>
+        <div class="budget-usd">${j.realUrl?"":`≈ USD<br>$${j.usdMin}+`}</div>
+      </div>
+      <div class="card-foot">
+        <div class="time">🕐 ~${j.hours} год</div>
+        <a class="apply" href="${href}" target="_blank" rel="noopener">На завдання ↗</a>
+      </div>
+    </div>
+  `;}).join("");
+  document.querySelectorAll(".tr-toggle").forEach(btn=>btn.onclick=()=>{
+    const id = +btn.dataset.id;
+    showingUk[id] = !showingUk[id];
+    render();
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input", e=>{query=e.target.value; render();});
+document.getElementById("budgetRange").addEventListener("input", e=>{
+  document.getElementById("budgetVal").textContent = e.target.value;
+  document.getElementById("budgetUsd").textContent = (e.target.value*24).toLocaleString("uk-UA");
+  render();
+});
+document.getElementById("salRange").addEventListener("input", e=>{
+  minSalary = +e.target.value * 1000;
+  document.getElementById("salVal").textContent = (e.target.value*1000).toLocaleString();
+  render();
+});
+document.getElementById("urgRange").addEventListener("input", e=>{
+  const labels = ["Будь-коли","Тиждень+","Кілька днів","Завтра","Сьогодні","Терміново"];
+  document.getElementById("urgLabel").textContent = `${e.target.value}/5 — ${labels[e.target.value]}`;
+});
+document.getElementById("instantSwitch").addEventListener("click", function(){
+  instantOnly = !instantOnly;
+  this.classList.toggle("on", instantOnly);
+  render();
+});
+document.getElementById("easyBanner").addEventListener("click", function(){
+  easyOnly = !easyOnly;
+  this.style.outline = easyOnly ? "2px solid var(--green)" : "none";
+  render();
+});
+document.getElementById("sortSelect").addEventListener("change", e=>{sortMode=e.target.value; render();});
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  query=""; instantOnly=false; easyOnly=false; sortMode="default"; minSalary=0; payFilter="all";
+  selectedSkills.clear(); selectedDiff=new Set([1,2,3,4,5]); selectedExchanges=new Set(EXCHANGES); activeTab="all";
+  document.getElementById("searchInput").value="";
+  document.querySelector('[data-pay="all"]').checked = true;
+  document.getElementById("sortSelect").value="default";
+  document.getElementById("budgetRange").value=600;
+  document.getElementById("budgetVal").textContent=600;
+  document.getElementById("budgetUsd").textContent=(14400).toLocaleString("uk-UA");
+  document.getElementById("salRange").value=0;
+  document.getElementById("salVal").textContent=0;
+  document.getElementById("instantSwitch").classList.remove("on");
+  document.getElementById("easyBanner").style.outline="none";
+  renderTabs(); renderSideLists(); render();
+});
+document.querySelectorAll("[data-pay]").forEach(r=>r.addEventListener("change", ()=>{
+  payFilter = r.dataset.pay; render();
+}));
+document.querySelectorAll(".curr-toggle button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".curr-toggle button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+});
+
+renderTabs();
+renderSideLists();
+render();
+</script>
+</body>
+</html>
